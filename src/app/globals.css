@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  /* Nexus brand colors */
+  --color-nexus-50: #eff6ff;
+  --color-nexus-100: #dbeafe;
+  --color-nexus-200: #bfdbfe;
+  --color-nexus-300: #93c5fd;
+  --color-nexus-400: #60a5fa;
+  --color-nexus-500: #3b82f6;
+  --color-nexus-600: #2563eb;
+  --color-nexus-700: #1d4ed8;
+  --color-nexus-800: #1e40af;
+  --color-nexus-900: #1e3a5f;
+
+  /* Status colors */
+  --color-status-active: #16a34a;
+  --color-status-onboarding: #ca8a04;
+  --color-status-leave: #dc2626;
+  --color-status-inactive: #6b7280;
+
+  /* Custom spacing */
+  --spacing-table-row: 48px;
+  --spacing-sidebar: 240px;
+
+  /* Custom shadows */
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+  --font-mono: var(--font-geist-mono, ui-monospace, monospace);
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 rounded-md font-medium bg-nexus-500 text-white
+      hover:bg-nexus-600 disabled:opacity-50 transition-colors;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 rounded-md font-medium border border-gray-300 text-gray-700
+      bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 rounded-md border border-gray-300
+      focus:outline-none focus:ring-2 focus:ring-nexus-500 text-sm
+      bg-white text-gray-900 placeholder-gray-400;
+  }
+
+  .table-header {
+    @apply h-table-row px-4 border-b border-gray-200 bg-gray-50
+      text-xs font-semibold text-gray-700 uppercase tracking-wider;
+  }
+}
+
+body {
+  @apply bg-white text-gray-900 antialiased;
+}

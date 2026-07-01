@@ -1,0 +1,7 @@
+﻿node_modules
+.next
+.env
+tsconfig.tsbuildinfo
+*.nft.json
+.clinerules
+

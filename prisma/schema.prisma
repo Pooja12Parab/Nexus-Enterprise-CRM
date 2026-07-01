@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String    @id // Clerk user ID
+  email     String    @unique
+  role      UserRole  @default(EMPLOYEE)
+  profile   EmployeeProfile?
+  auditLogs AuditLog[]
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  HR_MANAGER
+  DEPT_HEAD
+  EMPLOYEE
+}
+
+model EmployeeProfile {
+  id               String            @id @default(uuid())
+  employeeId       String            @unique
+  user             User?             @relation(fields: [userId], references: [id])
+  userId           String?           @unique
+  firstName        String
+  lastName         String
+  jobTitle         String?
+  location         String?
+  department       Department        @relation(fields: [departmentId], references: [id])
+  departmentId     String
+  status           EmpStatus         @default(ONBOARDING)
+  salaries         Salary[]
+  managerId        String?
+  manager          EmployeeProfile?  @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  subordinates     EmployeeProfile[] @relation("ManagerSubordinates")
+  hireDate         DateTime?
+  phoneNumber      String?
+  emergencyContact String?
+  taxInfo          Json?
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  @@map("employee_profiles")
+}
+
+model Department {
+  id        String            @id @default(uuid())
+  name      String            @unique
+  employees EmployeeProfile[]
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  @@map("departments")
+}
+
+model Salary {
+  id            String          @id @default(uuid())
+  employee      EmployeeProfile @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId    String
+  amount        Decimal         @db.Decimal(10, 2)
+  effectiveDate DateTime
+  notes         String?
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  @@map("salaries")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  action    String
+  targetId  String?
+  metadata  Json?
+  timestamp DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+enum EmpStatus {
+  ACTIVE
+  INACTIVE
+  ONBOARDING
+  LEAVE
+}
