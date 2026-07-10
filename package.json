@@ -26,6 +26,7 @@
     "@tanstack/react-virtual": "^3.13.6",
     "@types/pg": "^8.20.0",
     "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
     "lucide-react": "^1.21.0",
     "next": "16.2.9",
     "nuqs": "^2.8.9",
@@ -33,6 +34,7 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.80.0",
+    "svix": "^1.96.1",
     "tailwind-merge": "^3.6.0",
     "zod": "^3.25.76",
     "zustand": "^5.0.14"

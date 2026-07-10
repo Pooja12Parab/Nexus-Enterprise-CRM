@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { handleApiError, unauthorizedResponse, forbiddenResponse } from "@/lib/api-utils";
+import { handleApiError, unauthorizedResponse, forbiddenResponse, resolveRole } from "@/lib/api-utils";
 import { onboardingSchema } from "@/shared/schemas/onboarding";
 import { auth } from "@clerk/nextjs/server";
 
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
     if (!userId) return unauthorizedResponse();
 
-    const role = sessionClaims?.role as string | undefined;
+    const role = await resolveRole(userId, sessionClaims);
     if (role !== "HR_MANAGER" && role !== "SUPER_ADMIN") {
       return forbiddenResponse();
     }

@@ -13,7 +13,7 @@ export interface EmployeeRow {
   status: EmpStatus;
   user: {
     email: string;
-  };
+  } | null;
   location: string | null;
   hireDate: Date | null;
   phoneNumber: string | null;

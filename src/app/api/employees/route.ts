@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { handleApiError, unauthorizedResponse, forbiddenResponse } from "@/lib/api-utils";
+import { handleApiError, unauthorizedResponse, forbiddenResponse, resolveRole } from "@/lib/api-utils";
 import { employeeQuerySchema } from "@/shared/schemas/employee";
 import { auth } from "@clerk/nextjs/server";
 
@@ -10,20 +10,20 @@ export async function GET(request: NextRequest) {
 
     if (!userId) return unauthorizedResponse();
 
-    const role = sessionClaims?.role as string | undefined;
+    const role = await resolveRole(userId, sessionClaims);
     if (role !== "HR_MANAGER" && role !== "SUPER_ADMIN" && role !== "DEPT_HEAD") {
       return forbiddenResponse();
     }
 
     const { searchParams } = new URL(request.url);
     const parsed = employeeQuerySchema.safeParse({
-      page: searchParams.get("page") || "1",
+      page: searchParams.get("page"),
       dept: searchParams.get("dept"),
       status: searchParams.get("status"),
       search: searchParams.get("search"),
-      sortBy: searchParams.get("sortBy") || "lastName",
-      sortDir: searchParams.get("sortDir") || "asc",
-      limit: searchParams.get("limit") || "50",
+      sortBy: searchParams.get("sortBy"),
+      sortDir: searchParams.get("sortDir"),
+      limit: searchParams.get("limit"),
     });
 
     if (!parsed.success) {
@@ -35,6 +35,8 @@ export async function GET(request: NextRequest) {
 
     const { page, dept, status, search, sortBy, sortDir, limit } = parsed.data;
     const skip = (page - 1) * limit;
+    const orderField = sortBy ?? "lastName";
+    const orderDirection = sortDir ?? "asc";
 
     // Build dynamic where clause
     const whereClause: Record<string, unknown> = {};
@@ -51,7 +53,23 @@ export async function GET(request: NextRequest) {
 
     // DEPT_HEAD can only see their department
     if (role === "DEPT_HEAD") {
-      // Override or intersect department filter
+      const userEmail = sessionClaims?.email as string | undefined;
+      if (userEmail) {
+        const userRecord = await prisma.user.findUnique({
+          where: { email: userEmail },
+          select: {
+            profile: {
+              select: {
+                department: { select: { name: true } },
+              },
+            },
+          },
+        });
+        const deptName = userRecord?.profile?.department?.name;
+        if (deptName) {
+          whereClause.department = { name: deptName };
+        }
+      }
     }
 
     const [employees, totalCount] = await prisma.$transaction([
@@ -63,7 +81,7 @@ export async function GET(request: NextRequest) {
         },
         skip,
         take: limit,
-        orderBy: { [sortBy]: sortDir },
+        orderBy: { [orderField]: orderDirection },
       }),
       prisma.employeeProfile.count({ where: whereClause }),
     ]);

@@ -2,11 +2,11 @@ import { z } from "zod";
 
 export const employeeQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  dept: z.string().optional(),
-  status: z.string().optional(),
-  search: z.string().min(1).optional(),
-  sortBy: z.enum(["firstName", "lastName", "jobTitle", "status", "createdAt", "employeeId"]).default("lastName"),
-  sortDir: z.enum(["asc", "desc"]).default("asc"),
+  dept: z.string().nullish().default("All"),
+  status: z.string().nullish().default("All"),
+  search: z.string().nullish().default(""),
+  sortBy: z.enum(["firstName", "lastName", "jobTitle", "status", "createdAt", "employeeId"]).nullish().default("lastName"),
+  sortDir: z.enum(["asc", "desc"]).nullish().default("asc"),
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 

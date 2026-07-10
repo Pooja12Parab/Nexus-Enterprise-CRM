@@ -61,7 +61,12 @@ export default function DirectoryPage() {
       )}
 
       {data && data.data.length > 0 && (
-        <EmployeeDataGrid data={data.data} isLoading={isLoading} />
+        <EmployeeDataGrid
+          data={data.data}
+          isLoading={isLoading}
+          totalPages={data.meta.totalPages}
+          totalCount={data.meta.totalCount}
+        />
       )}
     </div>
   );

@@ -5,3 +5,7 @@ tsconfig.tsbuildinfo
 *.nft.json
 .clinerules
 
+playwright-report/
+implementation_plan.md
+test-results/.last-run.json
+.kilo/kilo.json

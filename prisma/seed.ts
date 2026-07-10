@@ -1,12 +1,23 @@
 import { PrismaClient, UserRole, EmpStatus } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import dotenv from "dotenv";
+dotenv.config();
 
-const prisma = new PrismaClient({
-  adapter: new PrismaPg(process.env.DATABASE_URL!),
-});
+const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Seeding database...");
+
+  // Clear existing data in reverse dependency order
+  console.log("Clearing existing data...");
+  await prisma.auditLog.deleteMany();
+  await prisma.salary.deleteMany();
+  await prisma.employeeProfile.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.department.deleteMany();
 
   // Create departments
   const departments = await Promise.all([
@@ -22,9 +33,9 @@ async function main() {
 
   console.log(`Created ${departments.length} departments`);
 
-  // Create users
+  // Create users (using Clerk-compatible IDs for seeded users)
   const users = [
-    { id: "user_super", email: "admin@nexus.internal", role: UserRole.SUPER_ADMIN },
+    { id: "user_super", email: "admin+clerk_test@nexus.com", role: UserRole.SUPER_ADMIN },
     { id: "user_hr1", email: "sarah.hr@nexus.internal", role: UserRole.HR_MANAGER },
     { id: "user_hr2", email: "mike.hr@nexus.internal", role: UserRole.HR_MANAGER },
     { id: "user_dept_eng", email: "alex.eng@nexus.internal", role: UserRole.DEPT_HEAD },
