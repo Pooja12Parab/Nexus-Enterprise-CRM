@@ -8,5 +8,6 @@ tsconfig.tsbuildinfo
 playwright-report/
 test-results/
 e2e/.auth/
+src/generated/
 implementation_plan.md
 .kilo/kilo.json

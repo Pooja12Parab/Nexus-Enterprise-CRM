@@ -1,4 +1,4 @@
-import type { UserRole, EmpStatus } from "@prisma/client";
+import type { UserRole, EmpStatus } from "@/generated/prisma/client";
 
 export interface EmployeeRow {
   id: string;

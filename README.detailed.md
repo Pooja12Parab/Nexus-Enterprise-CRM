@@ -2,6 +2,8 @@
 
 A modern, full-stack Enterprise CRM platform for managing employees, departments, organizational hierarchy, onboarding, and compensation — built on **Next.js 16**, **React 19**, **Prisma 7**, **PostgreSQL**, and **Clerk** authentication.
 
+> 📦 **Deployment:** See [`docs/deploy-plan.md`](docs/deploy-plan.md) for the full production deployment guide (Vercel + Neon + Clerk).
+
 ---
 
 ## Table of Contents

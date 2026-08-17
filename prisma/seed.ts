@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, EmpStatus } from "@prisma/client";
+import { PrismaClient, UserRole, EmpStatus } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import dotenv from "dotenv";

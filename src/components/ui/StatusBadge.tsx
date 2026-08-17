@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { EmpStatus } from "@prisma/client";
+import type { EmpStatus } from "@/generated/prisma/client";
 
 const statusStyles: Record<EmpStatus, string> = {
   ACTIVE: "bg-green-50 text-green-700 ring-green-600/20",
