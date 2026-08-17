@@ -6,6 +6,7 @@ tsconfig.tsbuildinfo
 .clinerules
 
 playwright-report/
+test-results/
+e2e/.auth/
 implementation_plan.md
-test-results/.last-run.json
 .kilo/kilo.json

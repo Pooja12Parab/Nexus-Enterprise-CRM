@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Landing Page", () => {
   test("renders hero section with correct title and CTAs", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("h1")).toContainText("Nexus Enterprise CRM");
+    await expect(page.getByRole("heading", { name: "Nexus Enterprise CRM" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Go to Dashboard" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sign In" })).toBeVisible();
   });
@@ -26,31 +26,28 @@ test.describe("Landing Page", () => {
   test("Go to Dashboard link navigates to sign-in redirect", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("link", { name: "Go to Dashboard" }).click();
-    // Should redirect to Clerk sign-in
-    await page.waitForURL("**/sign-in**");
+    await page.waitForURL("**/sign-in**", { timeout: 10_000 });
   });
 });
 
 test.describe("Sign In Page", () => {
   test("renders Clerk sign-in component", async ({ page }) => {
     await page.goto("/sign-in");
-    // Clerk renders its own branded elements
-    await expect(page.locator(".cl-rootBox").first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(".cl-rootBox").first()).toBeVisible({ timeout: 10_000 });
   });
 });
 
 test.describe("Sign Up Page", () => {
   test("renders Clerk sign-up component", async ({ page }) => {
     await page.goto("/sign-up");
-    await expect(page.locator(".cl-rootBox").first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(".cl-rootBox").first()).toBeVisible({ timeout: 10_000 });
   });
 });
 
 test.describe("403 Forbidden Page", () => {
   test("renders access denied with navigation links", async ({ page }) => {
-    // The 403 page is at /403 (not behind middleware since it's outside (dashboard))
     await page.goto("/403");
-    await expect(page.getByRole("heading", { name: "Access Denied" })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { name: "Access Denied" })).toBeVisible({ timeout: 10_000 });
     await expect(page.getByRole("link", { name: "Go to Dashboard" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Back to Home" })).toBeVisible();
   });
@@ -69,16 +66,17 @@ test.describe("Middleware Protection", () => {
   for (const route of protectedRoutes) {
     test(`${route} redirects unauthenticated users to sign-in`, async ({ page }) => {
       await page.goto(route);
-      await page.waitForURL("**/sign-in**", { timeout: 10000 });
+      await page.waitForURL("**/sign-in**", { timeout: 10_000 });
     });
   }
 });
 
 test.describe("API Routes", () => {
-  test("GET /api/employees returns 401 when unauthenticated", async ({ request }) => {
-    const res = await request.get("/api/employees");
-    // Should redirect to sign-in (307) or return 401, or be 200 with auth redirect
-    expect([200, 307, 401]).toContain(res.status());
+  test("GET /api/employees rejects unauthenticated requests", async ({ request }) => {
+    const res = await request.get("/api/employees", { maxRedirects: 0 });
+    // Must NOT be 200 (route is protected)
+    expect(res.status(), "expected 401 or 307, not 200").not.toBe(200);
+    expect([307, 401]).toContain(res.status());
   });
 
   test("POST /api/webhooks/clerk returns 400 without Svix headers", async ({ request }) => {
@@ -106,10 +104,9 @@ test.describe("API Routes", () => {
 });
 
 test.describe("404 Not Found Page", () => {
-  test("renders 404 for non-existent routes", async ({ page }) => {
-    const res = await page.request.get("/non-existent-page");
-    // Next.js may return 200 with the app shell for non-existent pages
-    // or redirect to sign-in due to middleware
-    expect([200, 307, 404]).toContain(res.status());
+  test("renders 404 for non-existent routes", async ({ request }) => {
+    const res = await request.get("/this-route-does-not-exist", { maxRedirects: 0 });
+    // Should not silently 200; either 404 (preferred) or middleware redirect (307)
+    expect([307, 404]).toContain(res.status());
   });
 });
