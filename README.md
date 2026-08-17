@@ -34,8 +34,14 @@ Nexus Enterprise CRM is a role-based employee and organization management platfo
 
 ## Screenshots
 
+### Landing
+<img src="docs/screenshots/landing.jpg" alt="Landing" width="900" />
+
 ### Sign In
 <img src="docs/screenshots/sign-in.jpg" alt="Sign In" width="900" />
+
+### Sign Up
+<img src="docs/screenshots/sign-up.jpg" alt="Sign Up" width="900" />
 
 ### Dashboard
 <img src="docs/screenshots/dashboard.jpg" alt="Dashboard" width="900" />
@@ -52,16 +58,10 @@ Nexus Enterprise CRM is a role-based employee and organization management platfo
 ### Onboarding Wizard
 <img src="docs/screenshots/onboarding.jpg" alt="Onboarding Wizard" width="900" />
 
-> **Authed pages** (Dashboard, Directory, Profile, Org Chart, Onboarding) are placeholders — capture them with the included script after signing in:
->
-> ```bash
-> # one-time: disable email-OTP for your Clerk test user in the Clerk dashboard
-> npm run dev
-> # in another terminal:
-> node scripts/capture-screenshots.mjs   # writes docs/screenshots/*.jpg
-> ```
->
-> The Sign In screenshot is captured live from the running app. For the full project documentation, see [README.detailed.md](README.detailed.md).
+### 403 Forbidden
+<img src="docs/screenshots/forbidden.jpg" alt="403 Forbidden" width="900" />
+
+> All screenshots are captured live from the running app against a seeded Postgres database (515 employees + 12 departments). For the full project documentation, see [README.detailed.md](README.detailed.md).
 
 ---
 
