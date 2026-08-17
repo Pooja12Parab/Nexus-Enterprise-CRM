@@ -62,11 +62,16 @@ The app is bootstrapped with `create-next-app` and extended with a typed Prisma 
 ### Onboarding Wizard
 <img src="docs/screenshots/onboarding.jpg" alt="Onboarding Wizard" width="900" />
 
-> **Note:** The images above are illustrative placeholders. To replace them with real captures:
-> 1. `npm run dev`
-> 2. Sign in and visit each route
-> 3. Capture and save the image into `docs/screenshots/<filename>.jpg`
-> 4. The README already references the correct paths.
+> The **Sign In** screenshot is captured live from the running app. The other five pages are placeholders because Clerk's email-OTP second factor prevents headless capture without disabling 2FA in the Clerk dashboard. Replace them with real captures using the included script:
+>
+> ```bash
+> # Disable email-OTP for the test user in the Clerk dashboard first
+> npm run dev
+> # in another terminal:
+> node scripts/capture-screenshots.mjs
+> ```
+>
+> The script uses the same Clerk form flow as the Playwright E2E setup.
 
 ---
 
@@ -358,12 +363,14 @@ The project implements a complete test pyramid:
 | Component | Vitest + Testing Library | `EmployeeDataGrid`, `FilterBar`, UI primitives |
 | API integration | Vitest | `/api/employees`, `/api/departments`, search/filter/sort |
 | E2E | Playwright | Sign-in, directory sort/filter/paginate/select, 0 console errors |
+| Screenshots | Playwright + `scripts/capture-screenshots.mjs` | Real PNG/JPG captures of each route for the README |
 
 Run the full pyramid locally:
 
 ```bash
-npm test          # lower 3 layers
-npm run test:e2e  # E2E (requires dev server + Clerk test user)
+npm test                  # lower 3 layers
+npm run test:e2e          # E2E (requires dev server + Clerk test user)
+node scripts/capture-screenshots.mjs   # capture README screenshots
 ```
 
 ---

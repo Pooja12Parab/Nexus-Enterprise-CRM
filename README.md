@@ -52,7 +52,16 @@ Nexus Enterprise CRM is a role-based employee and organization management platfo
 ### Onboarding Wizard
 <img src="docs/screenshots/onboarding.jpg" alt="Onboarding Wizard" width="900" />
 
-> **Note:** The screenshots above are illustrative placeholders. Replace the files in `docs/screenshots/` with real captures of your running app (`npm run dev` → open each page → screenshot) for an accurate GitHub gallery. For the full project documentation, see [README.detailed.md](README.detailed.md).
+> **Authed pages** (Dashboard, Directory, Profile, Org Chart, Onboarding) are placeholders — capture them with the included script after signing in:
+>
+> ```bash
+> # one-time: disable email-OTP for your Clerk test user in the Clerk dashboard
+> npm run dev
+> # in another terminal:
+> node scripts/capture-screenshots.mjs   # writes docs/screenshots/*.jpg
+> ```
+>
+> The Sign In screenshot is captured live from the running app. For the full project documentation, see [README.detailed.md](README.detailed.md).
 
 ---
 
