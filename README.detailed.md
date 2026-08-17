@@ -47,31 +47,31 @@ The app is bootstrapped with `create-next-app` and extended with a typed Prisma 
 ## Screenshots
 
 ### Landing
-<img src="docs/screenshots/landing.jpg" alt="Landing" width="900" />
+![Landing](docs/screenshots/landing.jpg)
 
 ### Sign In
-<img src="docs/screenshots/sign-in.jpg" alt="Sign In" width="900" />
+![Sign In](docs/screenshots/sign-in.jpg)
 
 ### Sign Up
-<img src="docs/screenshots/sign-up.jpg" alt="Sign Up" width="900" />
+![Sign Up](docs/screenshots/sign-up.jpg)
 
 ### Dashboard
-<img src="docs/screenshots/dashboard.jpg" alt="Dashboard" width="900" />
+![Dashboard](docs/screenshots/dashboard.jpg)
 
 ### Employee Directory
-<img src="docs/screenshots/directory.jpg" alt="Employee Directory" width="900" />
+![Employee Directory](docs/screenshots/directory.jpg)
 
 ### Employee Profile
-<img src="docs/screenshots/profile.jpg" alt="Employee Profile" width="900" />
+![Employee Profile](docs/screenshots/profile.jpg)
 
 ### Org Chart
-<img src="docs/screenshots/org-chart.jpg" alt="Org Chart" width="900" />
+![Org Chart](docs/screenshots/org-chart.jpg)
 
 ### Onboarding Wizard
-<img src="docs/screenshots/onboarding.jpg" alt="Onboarding Wizard" width="900" />
+![Onboarding Wizard](docs/screenshots/onboarding.jpg)
 
 ### 403 Forbidden
-<img src="docs/screenshots/forbidden.jpg" alt="403 Forbidden" width="900" />
+![403 Forbidden](docs/screenshots/forbidden.jpg)
 
 > All screenshots are captured live from the running app against a seeded Postgres database (515 employees + 12 departments).
 
