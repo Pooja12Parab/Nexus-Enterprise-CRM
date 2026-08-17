@@ -46,34 +46,34 @@ The app is bootstrapped with `create-next-app` and extended with a typed Prisma 
 
 ## Screenshots
 
+All screenshots are captured live from the running app against a seeded Postgres database (515 employees + 12 departments). Served via jsDelivr CDN for reliable rendering on GitHub.
+
 ### Landing
-![Landing](docs/screenshots/landing.jpg)
+[![Landing](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/landing.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/landing.jpg)
 
 ### Sign In
-![Sign In](docs/screenshots/sign-in.jpg)
+[![Sign In](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/sign-in.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/sign-in.jpg)
 
 ### Sign Up
-![Sign Up](docs/screenshots/sign-up.jpg)
+[![Sign Up](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/sign-up.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/sign-up.jpg)
 
 ### Dashboard
-![Dashboard](docs/screenshots/dashboard.jpg)
+[![Dashboard](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/dashboard.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/dashboard.jpg)
 
 ### Employee Directory
-![Employee Directory](docs/screenshots/directory.jpg)
+[![Employee Directory](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/directory.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/directory.jpg)
 
 ### Employee Profile
-![Employee Profile](docs/screenshots/profile.jpg)
+[![Employee Profile](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/profile.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/profile.jpg)
 
 ### Org Chart
-![Org Chart](docs/screenshots/org-chart.jpg)
+[![Org Chart](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/org-chart.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/org-chart.jpg)
 
 ### Onboarding Wizard
-![Onboarding Wizard](docs/screenshots/onboarding.jpg)
+[![Onboarding Wizard](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/onboarding.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/onboarding.jpg)
 
 ### 403 Forbidden
-![403 Forbidden](docs/screenshots/forbidden.jpg)
-
-> All screenshots are captured live from the running app against a seeded Postgres database (515 employees + 12 departments).
+[![403 Forbidden](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/forbidden.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/forbidden.jpg)
 
 ---
 
