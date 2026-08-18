@@ -34,7 +34,6 @@ Nexus Enterprise CRM is a role-based employee and organization management platfo
 
 ## Screenshots
 
-All screenshots are captured live from the running app against a seeded Postgres database (515 employees + 12 departments). Served via jsDelivr CDN for reliable rendering on GitHub.
 
 ### Landing
 [![Landing](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/landing.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/landing.jpg)
