@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { existsSync } from "node:fs";
 import { AUTH_FILE } from "./fixtures/auth";
 
-test.skip(!existsSync(AUTH_FILE), `Auth storage state missing at ${AUTH_FILE}. Run the setup project first.`);
+test.skip(!existsSync(AUTH_FILE), `Auth storage state missing at ${AUTH_FILE}. Disable email-OTP in Clerk dashboard and re-run.`);
 
 /**
  * Uses the authed storage state written by e2e/setup/auth.setup.ts.

@@ -2,12 +2,10 @@ import { test, expect } from "@playwright/test";
 import { existsSync } from "node:fs";
 import { AUTH_FILE } from "./fixtures/auth";
 
-test.skip(!existsSync(AUTH_FILE), `Auth storage state missing at ${AUTH_FILE}. Run the setup project first.`);
+test.skip(!existsSync(AUTH_FILE), `Auth storage state missing at ${AUTH_FILE}. Disable email-OTP in Clerk dashboard and re-run.`);
 
 /**
  * Uses the authed storage state written by e2e/setup/auth.setup.ts.
- * The onboarding page lives inside the (dashboard) route group and is
- * protected by middleware.
  */
 test.describe("Onboarding Flow", () => {
   test("renders the wizard with the 4-step stepper", async ({ page }) => {
@@ -25,7 +23,8 @@ test.describe("Onboarding Flow", () => {
 
   test("advances to the next step when the user clicks Continue", async ({ page }) => {
     await page.goto("/onboarding");
-    const continueButton = page.getByRole("button", { name: /Continue|Next/ });
+    // Match only the wizard's "Continue" button, not the Next.js dev-tools button
+    const continueButton = page.getByRole("button", { name: "Continue", exact: true });
     await expect(continueButton).toBeVisible();
     await continueButton.click();
     await expect(page.getByRole("heading", { name: /Role|Compensation/ })).toBeVisible();

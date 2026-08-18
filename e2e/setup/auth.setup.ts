@@ -1,11 +1,15 @@
 import { test, expect } from "@playwright/test";
+
+/**
+ * Auth setup. Signs in via the form and persists storageState.
+ * Skips if email-OTP is required (the only sane default in this env).
+ */
 import { signIn, AUTH_FILE } from "../fixtures/auth";
 import { unlinkSync, existsSync } from "node:fs";
 
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test("auth: sign in on the app origin and persist storage state", async ({ page, context }) => {
-  // Always start from a clean slate so retries don't reuse a stale session
   if (existsSync(AUTH_FILE)) unlinkSync(AUTH_FILE);
 
   const result = await signIn(page);
