@@ -1,10 +1,12 @@
 # Nexus Enterprise CRM
 
-A modern, full-stack Enterprise CRM platform for managing employees, departments, organizational hierarchy, onboarding, and compensation — built on **Next.js 16**, **React 19**, **Prisma 7**, **PostgreSQL**, and **Clerk** authentication.
+A modern, full-stack Enterprise CRM platform for managing employees, departments, organizational hierarchy, onboarding, and compensation — built on **Next.js 16**, **React 19**, **Prisma 7**, **PostgreSQL**, and **Clerk** authentication. Includes **AI features** (Vercel AI SDK + Gemini) and an **MCP server** for AI agent interoperability.
 
 > 📦 **Deployment:** See [`docs/deploy-plan.md`](docs/deploy-plan.md) for the full production deployment guide (Vercel + Neon + Clerk).
 >
 > 🤖 **AI integration:** See [`docs/AI_INTEGRATION.md`](docs/AI_INTEGRATION.md) for the Vercel AI SDK + Google Gemini integration plan.
+>
+> 🔌 **MCP server:** See [`docs/MCP_INTEGRATION.md`](docs/MCP_INTEGRATION.md) for the Model Context Protocol server plan.
 
 ---
 
@@ -48,7 +50,7 @@ The app is bootstrapped with `create-next-app` and extended with a typed Prisma 
 
 ## Screenshots
 
-All screenshots are captured live from the running app against a seeded Postgres database (515 employees + 12 departments). Served via jsDelivr CDN for reliable rendering on GitHub.
+All screenshots are captured live from the running app against a seeded Postgres database (529 employees + 8 departments). Served via jsDelivr CDN for reliable rendering on GitHub.
 
 ### Landing
 [![Landing](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/landing.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/landing.jpg)
@@ -79,6 +81,9 @@ All screenshots are captured live from the running app against a seeded Postgres
 
 ### HR Assistant Chat (real Gemini + Prisma tool calls)
 [![HR Assistant Chat](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/hr-assistant-chat.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/hr-assistant-chat.jpg)
+
+### MCP Server (live curl — 5 tools, real Prisma responses)
+[![MCP Server](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/mcp-endpoint.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/mcp-endpoint.jpg)
 
 ### 403 Forbidden
 [![403 Forbidden](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/forbidden.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/forbidden.jpg)
@@ -138,13 +143,19 @@ All screenshots are captured live from the running app against a seeded Postgres
 
 ### HR Assistant Chat (`/hr-assistant`)
 - Streaming chat with `useChat` + `DefaultChatTransport` + `createUIMessageStreamResponse`
-- Real Prisma tools defined via `tool({ inputSchema, execute })`:
-  - `listEmployees` — filter by department, status, search
-  - `countByDepartment` — workforce distribution
-  - `listDepartments` — all departments with employee counts
-  - `getEmployeeStats` — total / by-status / department-count aggregations
+- Tools come from the MCP server (single source of truth — see MCP section below)
 - Conversation history persisted to PostgreSQL (`ChatThread` + `ChatMessage` tables)
 - Multi-step agent loop via `stopWhen: stepCountIs(5)`
+
+### MCP Server (`/api/mcp`)
+- **Model Context Protocol** server at `/api/mcp` exposing CRM data
+- **Streamable HTTP transport** (current MCP spec 2025-06-18)
+- **5 tools** backed by Prisma: `list_employees`, `search_employees`, `count_by_department`, `get_employee`, `get_employee_stats`
+- **2 resources** (file-like): `crm://stats/summary`, `crm://departments`
+- **2 prompts**: `onboarding_checklist`, `performance_review`
+- **Dual auth**: `Authorization: Bearer <MCP_API_KEY>` for external clients, Clerk session for internal
+- HR Assistant chat consumes the **same tools** via `@ai-sdk/mcp`'s `createMCPClient` — zero duplication
+- Connect Claude Desktop, ChatGPT, Cursor, or any MCP client to query your CRM directly
 
 ---
 
@@ -156,11 +167,12 @@ All screenshots are captured live from the running app against a seeded Postgres
 | UI | React 19.2.7 |
 | Language | TypeScript 5 |
 | Styling | Tailwind CSS v4 (PostCSS) |
-| Database | PostgreSQL |
+| Database | PostgreSQL (Neon) |
 | ORM | Prisma 7.8 (with `@prisma/adapter-pg`) |
 | Auth | Clerk (`@clerk/nextjs` 7) |
 | Webhooks | `svix` for signature verification |
 | AI SDK | Vercel AI SDK 7 (`ai`, `@ai-sdk/google`, `@ai-sdk/react`) |
+| MCP SDK | `@modelcontextprotocol/sdk` 1.30 (Streamable HTTP, Tools, Resources, Prompts) |
 | LLM | Google Gemini 3.5-flash-lite (verified on free tier) |
 | Data fetching | TanStack React Query 5 |
 | URL state | `nuqs` 2 |
@@ -177,28 +189,42 @@ All screenshots are captured live from the running app against a seeded Postgres
 ## Architecture
 
 ```
-Browser
-  │
-  │  (Clerk session cookie)
-  ▼
-Next.js App Router  ──►  Middleware (clerkMiddleware)
-  │                        │
-  │                        ├── Public:  /, /sign-in, /sign-up, /403
-  │                        └── Protected: /dashboard, /directory, ...
-  │
-  ├── Server Components (data via Prisma)
-  ├── Client Components (React Query + nuqs + Zustand)
-  │
-  ├── /api/employees       GET (paginated/search/filter)  PATCH/:id
-  ├── /api/departments     GET
-  ├── /api/onboard         POST
-  └── /api/webhooks/clerk  POST  (svix-verified)
-                                │
-                                ▼
-                          Prisma Client  ──►  PostgreSQL
+                ┌────────────────────────────┐
+                │     External AI clients    │
+                │ Claude / ChatGPT / Cursor  │
+                │ (Bearer MCP_API_KEY)       │
+                └─────────────┬──────────────┘
+                              │ MCP (JSON-RPC over Streamable HTTP)
+                              ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                       Next.js App Router                           │
+│  Middleware (clerkMiddleware — bypassed if E2E_BYPASS_AUTH=1)       │
+│                                                                      │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐ │
+│   │  Page Routes │  │   API Routes │  │   MCP Server (/api/mcp)   │ │
+│   │  Server      │  │              │  │   • 5 tools               │ │
+│   │  Components  │  │  /api/...    │  │   • 2 resources           │ │
+│   │  + Client    │  │  /api/ai/... │  │   • 2 prompts             │ │
+│   │  Components  │  │  /api/chat   │  │   Streamable HTTP        │ │
+│   └──────┬───────┘  └──────┬───────┘  └────────────┬─────────────┘ │
+└──────────┼────────────────┼─────────────────────┼───────────────┘
+           │                │                     │
+           └────────────────┼─────────────────────┘
+                            │
+                            ▼
+                  ┌─────────────────────────┐
+                  │  Prisma Client (server)  │
+                  └────────────┬────────────┘
+                               │
+                               ▼
+                    ┌──────────────────────┐
+                    │  Neon PostgreSQL DB   │
+                    └──────────────────────┘
 ```
 
-- **Auth flow**: Clerk hosts the user. On sign-up, Clerk posts a `user.created` webhook (verified via `svix`) which writes a `User` and (optionally) an `EmployeeProfile` to Postgres.
+- **Auth flow**: Clerk hosts the user. On sign-up, Clerk posts a `user.created` webhook (verified via `svix`) which writes a `User` to Postgres.
+- **AI flow**: User sends message in `/hr-assistant` → `/api/chat` calls `createMCPClient({ transport: { type: 'http', url: '/api/mcp' } })` → gets the same tools exposed to external MCP clients → Vercel AI SDK streams response via SSE.
+- **MCP flow**: External AI clients (Claude Desktop, ChatGPT, etc.) POST to `/api/mcp` with `Authorization: Bearer <MCP_API_KEY>`. The server authenticates, fetches fresh tools/resources/prompts, and responds in JSON-RPC 2.0 over Streamable HTTP.
 - **State strategy**: Server state in React Query; URL state in `nuqs`; ephemeral client state in Zustand.
 - **Form strategy**: `react-hook-form` + `zod` resolvers; schemas live in `src/shared/schemas/`.
 
@@ -210,7 +236,7 @@ Next.js App Router  ──►  Middleware (clerkMiddleware)
 Nexus_Enterprise_CRM/
 ├── prisma/
 │   ├── schema.prisma          # User, EmployeeProfile, Department, Salary, AuditLog
-│   └── seed.ts                # 515 employees, 12 departments
+│   └── seed.ts                # 529 employees, 8 departments
 ├── public/                    # static assets
 ├── src/
 │   ├── app/
@@ -231,19 +257,29 @@ Nexus_Enterprise_CRM/
 │   │   ├── sign-in/[[...sign-in]]/
 │   │   └── sign-up/[[...sign-up]]/
 │   ├── components/
+│   │   ├── ai/                # AiSearch, ChatPanel, OnboardingSummaryButton
 │   │   ├── directory/         # EmployeeDataGrid, FilterBar, etc.
 │   │   ├── layout/            # Sidebar, TopBar, Shell
 │   │   ├── onboarding/
 │   │   └── ui/                # primitives (Button, Input, Badge, Card)
 │   ├── hooks/                 # useEmployees, useDepartments
-│   ├── lib/                   # prisma client, clerk helpers, utils
+│   ├── lib/
+│   │   ├── ai/                # Vercel AI SDK client, prompts, tools, rate limit
+│   │   ├── mcp/               # MCP server, tools, resources, prompts, client
+│   │   ├── auth.ts             # Clerk session + E2E bypass shim
+│   │   ├── prisma.ts           # Prisma client (singleton)
+│   │   └── utils.ts
 │   ├── shared/
 │   │   ├── schemas/           # zod schemas
 │   │   └── types/             # shared TypeScript types
 │   ├── stores/                # zustand stores
 │   └── __tests__/             # api/ components/ hooks/ schemas/ stores/
 ├── e2e/                       # Playwright specs
-├── docs/screenshots/          # README images
+├── docs/
+│   ├── AI_INTEGRATION.md      # AI features plan
+│   ├── MCP_INTEGRATION.md     # MCP server plan
+│   ├── deploy-plan.md         # production deployment guide
+│   └── screenshots/           # README images
 ├── implementation_plan.md
 ├── playwright.config.ts
 ├── vitest.config.ts
@@ -286,7 +322,7 @@ Fill in the values (see [Environment Variables](#environment-variables)).
 ```bash
 npm run db:generate     # generate Prisma client
 npm run db:push         # apply schema to PostgreSQL
-npm run db:seed         # seed 515 employees + 12 departments
+npm run db:seed         # seed 529 employees + 8 departments
 ```
 
 ### Run the dev server
@@ -379,7 +415,7 @@ npm run db:seed       # idempotent reseed
 | `npm run test:e2e` | Playwright E2E suite |
 | `npm run db:generate` | `prisma generate` |
 | `npm run db:push` | Push schema to database |
-| `npm run db:seed` | Seed sample data (515 employees) |
+| `npm run db:seed` | Seed sample data (529 employees) |
 | `npm run db:studio` | Open Prisma Studio |
 
 ---

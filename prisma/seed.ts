@@ -8,6 +8,161 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+/**
+ * Seed Nexus CRM with realistic, diverse data.
+ * - 8 departments
+ * - 5 demo users with various roles
+ * - 15 hand-curated "VIP" employees (Marcus, Aisha, Sofia, etc.)
+ * - 500 bulk employees from a large name pool so the directory grid is varied
+ */
+
+// Large, diverse name pools so the directory doesn't repeat "Jack Allen, QA Engineer" 64 times
+const FIRST_NAMES = [
+  "Aaron", "Abigail", "Adam", "Aditya", "Aisha", "Alex", "Alice", "Amir",
+  "Ananya", "Andrew", "Anita", "Arjun", "Ava", "Benjamin", "Bianca", "Carlos",
+  "Chen", "Chloe", "Daniel", "David", "Devanshi", "Diya", "Elena", "Eli",
+  "Emma", "Ethan", "Fatima", "Gabriel", "Grace", "Hannah", "Hiro", "Isabella",
+  "Jamal", "James", "Jasmine", "Jay", "Jessica", "Jin", "Jordan", "Kai",
+  "Kavya", "Khalid", "Kira", "Krishna", "Lakshmi", "Liam", "Lina", "Lucas",
+  "Marcus", "Maria", "Maya", "Mei", "Mia", "Mohammed", "Nadia", "Naomi",
+  "Nia", "Noah", "Olivia", "Omar", "Owen", "Priya", "Rafael", "Ravi",
+  "Riya", "Rohan", "Rosa", "Ryan", "Saanvi", "Sakura", "Sam", "Sara",
+  "Sarah", "Sean", "Sofia", "Sonia", "Tara", "Tenzin", "Theo", "Tia",
+  "Tomas", "Vikram", "Wei", "Yuki", "Zara", "Zoe",
+];
+
+const LAST_NAMES = [
+  "Adams", "Adler", "Agarwal", "Ahmed", "Anderson", "Bailey", "Baker", "Barnes",
+  "Bell", "Bennett", "Bhatia", "Brown", "Campbell", "Carter", "Chang", "Chatterjee",
+  "Chen", "Choi", "Chowdhury", "Clark", "Cohen", "Collins", "Cook", "Cooper",
+  "Cox", "Davis", "Diaz", "Edwards", "Evans", "Fischer", "Fisher", "Foster",
+  "Gomez", "Gonzalez", "Graham", "Green", "Hall", "Harris", "Hassan", "Hayes",
+  "Henderson", "Hernandez", "Hill", "Howard", "Hussain", "Iyer", "Jackson", "Jensen",
+  "Johansson", "Johnson", "Jones", "Kapoor", "Khan", "Kim", "Kumar", "Larsen",
+  "Lee", "Lewis", "Liu", "Lopez", "Martin", "Martinez", "Mehta", "Mitchell",
+  "Mohamed", "Morgan", "Murphy", "Nakamura", "Nguyen", "O'Brien", "Olsen", "Patel",
+  "Pereira", "Petersen", "Phillips", "Powell", "Price", "Qureshi", "Ramirez", "Rao",
+  "Reed", "Reyes", "Rivera", "Roberts", "Robinson", "Rodriguez", "Ross", "Sato",
+  "Schmidt", "Scott", "Shah", "Sharma", "Singh", "Smith", "Sullivan", "Sun",
+  "Tanaka", "Taylor", "Thomas", "Thompson", "Turner", "Verma", "Walker", "Wang",
+  "White", "Williams", "Wilson", "Wong", "Wright", "Yamamoto", "Yang", "Zhang",
+  "Zhao",
+];
+
+const TITLES_BY_DEPARTMENT: Record<string, string[]> = {
+  Engineering: [
+    "Software Engineer",
+    "Senior Software Engineer",
+    "Staff Engineer",
+    "Engineering Manager",
+    "Backend Engineer",
+    "Frontend Engineer",
+    "Full-Stack Engineer",
+    "Site Reliability Engineer",
+    "DevOps Engineer",
+    "Platform Engineer",
+    "Engineering Director",
+    "VP of Engineering",
+  ],
+  Product: [
+    "Product Manager",
+    "Senior Product Manager",
+    "Product Designer",
+    "Group Product Manager",
+    "Director of Product",
+    "VP of Product",
+    "Product Analyst",
+  ],
+  Design: [
+    "UX Designer",
+    "Senior UX Designer",
+    "UX Researcher",
+    "Design Lead",
+    "Visual Designer",
+    "Design Director",
+    "UX Writer",
+  ],
+  Marketing: [
+    "Marketing Manager",
+    "Content Strategist",
+    "Growth Marketer",
+    "Brand Manager",
+    "Marketing Director",
+    "Demand Generation Specialist",
+    "SEO Specialist",
+  ],
+  Sales: [
+    "Account Executive",
+    "Senior Account Executive",
+    "Sales Development Representative",
+    "Sales Manager",
+    "Enterprise Account Executive",
+    "Sales Director",
+    "VP of Sales",
+    "Customer Success Manager",
+  ],
+  "Human Resources": [
+    "HR Business Partner",
+    "Recruiter",
+    "Senior Recruiter",
+    "HR Coordinator",
+    "People Operations Manager",
+    "Director of People",
+  ],
+  Finance: [
+    "Financial Analyst",
+    "Senior Financial Analyst",
+    "Controller",
+    "Accountant",
+    "FP&A Manager",
+    "CFO",
+  ],
+  Operations: [
+    "Operations Manager",
+    "Senior Operations Manager",
+    "Workforce Planning Lead",
+    "Facilities Manager",
+    "IT Operations Specialist",
+    "Director of Operations",
+  ],
+};
+
+const LOCATIONS = [
+  "Bangalore, IN",
+  "Mumbai, IN",
+  "Hyderabad, IN",
+  "New York, NY",
+  "San Francisco, CA",
+  "Austin, TX",
+  "Seattle, WA",
+  "Chicago, IL",
+  "Remote",
+];
+
+// Helper: pick random element from an array
+function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// Helper: pick random integer in [min, max]
+function randInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Helper: salary band by seniority (tier = years-of-experience bucket)
+function salaryForTier(tier: "junior" | "mid" | "senior" | "lead" | "principal"): number {
+  const ranges = {
+    junior: [70000, 95000],
+    mid: [100000, 140000],
+    senior: [140000, 185000],
+    lead: [180000, 240000],
+    principal: [220000, 320000],
+  };
+  const [lo, hi] = ranges[tier];
+  // Round to nearest 5k for cleaner numbers
+  return Math.round((randInt(lo, hi) / 5000)) * 5000;
+}
+
 async function main() {
   console.log("🌱 Seeding database...");
 
@@ -16,24 +171,22 @@ async function main() {
   await prisma.auditLog.deleteMany();
   await prisma.salary.deleteMany();
   await prisma.employeeProfile.deleteMany();
+  await prisma.chatMessage.deleteMany();
+  await prisma.chatThread.deleteMany();
+  await prisma.aiUsageLog.deleteMany();
   await prisma.user.deleteMany();
   await prisma.department.deleteMany();
 
   // Create departments
-  const departments = await Promise.all([
-    prisma.department.create({ data: { name: "Engineering" } }),
-    prisma.department.create({ data: { name: "Product" } }),
-    prisma.department.create({ data: { name: "Design" } }),
-    prisma.department.create({ data: { name: "Marketing" } }),
-    prisma.department.create({ data: { name: "Sales" } }),
-    prisma.department.create({ data: { name: "Human Resources" } }),
-    prisma.department.create({ data: { name: "Finance" } }),
-    prisma.department.create({ data: { name: "Operations" } }),
-  ]);
-
+  const departments = await Promise.all(
+    Object.keys(TITLES_BY_DEPARTMENT).map((name) =>
+      prisma.department.create({ data: { name } })
+    )
+  );
+  const deptByName = Object.fromEntries(departments.map((d) => [d.name, d]));
   console.log(`Created ${departments.length} departments`);
 
-  // Create users (using Clerk-compatible IDs for seeded users)
+  // Create demo users with varied roles
   const users = [
     { id: "user_super", email: "admin+clerk_test@nexus.com", role: UserRole.SUPER_ADMIN },
     { id: "user_hr1", email: "sarah.hr@nexus.internal", role: UserRole.HR_MANAGER },
@@ -41,87 +194,127 @@ async function main() {
     { id: "user_dept_eng", email: "alex.eng@nexus.internal", role: UserRole.DEPT_HEAD },
     { id: "user_dept_prod", email: "lisa.prod@nexus.internal", role: UserRole.DEPT_HEAD },
   ];
-
   for (const u of users) {
     await prisma.user.create({ data: u });
   }
   console.log(`Created ${users.length} users`);
 
-  // Seed employee profiles
-  const employeeData = [
-    { firstName: "Marcus", lastName: "Chen", jobTitle: "Senior Engineer", department: "Engineering", status: EmpStatus.ACTIVE, salary: 135000 },
-    { firstName: "Aisha", lastName: "Patel", jobTitle: "Staff Engineer", department: "Engineering", status: EmpStatus.ACTIVE, salary: 155000 },
-    { firstName: "James", lastName: "Wilson", jobTitle: "Junior Engineer", department: "Engineering", status: EmpStatus.ONBOARDING, salary: 85000 },
-    { firstName: "Sofia", lastName: "Garcia", jobTitle: "Engineering Manager", department: "Engineering", status: EmpStatus.ACTIVE, salary: 170000 },
-    { firstName: "Daniel", lastName: "Kim", jobTitle: "Product Manager", department: "Product", status: EmpStatus.ACTIVE, salary: 140000 },
-    { firstName: "Emma", lastName: "Thompson", jobTitle: "UX Designer", department: "Design", status: EmpStatus.ACTIVE, salary: 120000 },
-    { firstName: "Noah", lastName: "Martinez", jobTitle: "Marketing Lead", department: "Marketing", status: EmpStatus.ACTIVE, salary: 125000 },
-    { firstName: "Olivia", lastName: "Brown", jobTitle: "Sales Director", department: "Sales", status: EmpStatus.ACTIVE, salary: 160000 },
-    { firstName: "Liam", lastName: "Davis", jobTitle: "HR Coordinator", department: "Human Resources", status: EmpStatus.ACTIVE, salary: 75000 },
-    { firstName: "Zara", lastName: "Nguyen", jobTitle: "Financial Analyst", department: "Finance", status: EmpStatus.ACTIVE, salary: 110000 },
-    { firstName: "Ethan", lastName: "Taylor", jobTitle: "Operations Manager", department: "Operations", status: EmpStatus.ACTIVE, salary: 130000 },
-    { firstName: "Ava", lastName: "Anderson", jobTitle: "DevOps Engineer", department: "Engineering", status: EmpStatus.INACTIVE, salary: 140000 },
-    { firstName: "Lucas", lastName: "Thomas", jobTitle: "Backend Engineer", department: "Engineering", status: EmpStatus.LEAVE, salary: 125000 },
-    { firstName: "Mia", lastName: "Jackson", jobTitle: "Frontend Engineer", department: "Engineering", status: EmpStatus.ACTIVE, salary: 115000 },
-    { firstName: "Benjamin", lastName: "White", jobTitle: "Data Scientist", department: "Engineering", status: EmpStatus.ACTIVE, salary: 145000 },
+  // Hand-curated "VIP" employees (realistic, varied)
+  const vipEmployees = [
+    { first: "Marcus", last: "Chen", title: "VP of Engineering", dept: "Engineering", tier: "principal" as const, status: EmpStatus.ACTIVE, yearsAgo: 5 },
+    { first: "Aisha", last: "Patel", title: "Staff Software Engineer", dept: "Engineering", tier: "lead" as const, status: EmpStatus.ACTIVE, yearsAgo: 4 },
+    { first: "Sofia", last: "Garcia", title: "Engineering Director", dept: "Engineering", tier: "principal" as const, status: EmpStatus.ACTIVE, yearsAgo: 6 },
+    { first: "Daniel", last: "Kim", title: "Senior Product Manager", dept: "Product", tier: "senior" as const, status: EmpStatus.ACTIVE, yearsAgo: 3 },
+    { first: "Emma", last: "Thompson", title: "Design Lead", dept: "Design", tier: "lead" as const, status: EmpStatus.ACTIVE, yearsAgo: 4 },
+    { first: "Noah", last: "Martinez", title: "Marketing Director", dept: "Marketing", tier: "principal" as const, status: EmpStatus.ACTIVE, yearsAgo: 5 },
+    { first: "Olivia", last: "Brown", title: "VP of Sales", dept: "Sales", tier: "principal" as const, status: EmpStatus.ACTIVE, yearsAgo: 6 },
+    { first: "Liam", last: "Davis", title: "Director of People", dept: "Human Resources", tier: "principal" as const, status: EmpStatus.ACTIVE, yearsAgo: 4 },
+    { first: "Zara", last: "Nguyen", title: "FP&A Manager", dept: "Finance", tier: "lead" as const, status: EmpStatus.ACTIVE, yearsAgo: 3 },
+    { first: "Ethan", last: "Taylor", title: "Director of Operations", dept: "Operations", tier: "principal" as const, status: EmpStatus.ACTIVE, yearsAgo: 5 },
+    { first: "Ava", last: "Anderson", title: "Senior Site Reliability Engineer", dept: "Engineering", tier: "senior" as const, status: EmpStatus.ONBOARDING, yearsAgo: 0.1 },
+    { first: "Lucas", last: "Thomas", title: "Backend Engineer", dept: "Engineering", tier: "mid" as const, status: EmpStatus.LEAVE, yearsAgo: 2 },
+    { first: "Mia", last: "Jackson", title: "Frontend Engineer", dept: "Engineering", tier: "mid" as const, status: EmpStatus.ACTIVE, yearsAgo: 2 },
+    { first: "Benjamin", last: "White", title: "Data Scientist", dept: "Engineering", tier: "senior" as const, status: EmpStatus.ACTIVE, yearsAgo: 3 },
+    { first: "James", last: "Wilson", title: "Junior Software Engineer", dept: "Engineering", tier: "junior" as const, status: EmpStatus.ONBOARDING, yearsAgo: 0.2 },
+    { first: "Sarah", last: "Mitchell", title: "Product Designer", dept: "Product", tier: "mid" as const, status: EmpStatus.ACTIVE, yearsAgo: 2 },
+    { first: "Robert", last: "Chen", title: "Data Analyst", dept: "Product", tier: "mid" as const, status: EmpStatus.ACTIVE, yearsAgo: 3 },
+    { first: "Yuki", last: "Tanaka", title: "UX Researcher", dept: "Design", tier: "mid" as const, status: EmpStatus.ACTIVE, yearsAgo: 2 },
+    { first: "Jamal", last: "Hassan", title: "Growth Marketer", dept: "Marketing", tier: "mid" as const, status: EmpStatus.ACTIVE, yearsAgo: 1 },
+    { first: "Priya", last: "Sharma", title: "Account Executive", dept: "Sales", tier: "mid" as const, status: EmpStatus.ACTIVE, yearsAgo: 2 },
+    { first: "Tomas", last: "Garcia", title: "Senior Account Executive", dept: "Sales", tier: "senior" as const, status: EmpStatus.ACTIVE, yearsAgo: 4 },
+    { first: "Nadia", last: "Ahmed", title: "Senior Recruiter", dept: "Human Resources", tier: "senior" as const, status: EmpStatus.ACTIVE, yearsAgo: 4 },
+    { first: "Kavya", last: "Iyer", title: "Financial Analyst", dept: "Finance", tier: "mid" as const, status: EmpStatus.ACTIVE, yearsAgo: 1 },
+    { first: "Tenzin", last: "Sherpa", title: "Workforce Planning Lead", dept: "Operations", tier: "lead" as const, status: EmpStatus.ACTIVE, yearsAgo: 5 },
+    { first: "Wei", last: "Chen", title: "Staff Engineer", dept: "Engineering", tier: "lead" as const, status: EmpStatus.ACTIVE, yearsAgo: 6 },
+    { first: "Theo", last: "Martin", title: "Platform Engineer", dept: "Engineering", tier: "senior" as const, status: EmpStatus.ACTIVE, yearsAgo: 3 },
+    { first: "Ravi", last: "Krishnan", title: "DevOps Engineer", dept: "Engineering", tier: "mid" as const, status: EmpStatus.ACTIVE, yearsAgo: 2 },
+    { first: "Iris", last: "Hall", title: "UX Writer", dept: "Design", tier: "junior" as const, status: EmpStatus.ACTIVE, yearsAgo: 1 },
+    { first: "Diya", last: "Mehta", title: "Content Strategist", dept: "Marketing", tier: "mid" as const, status: EmpStatus.ACTIVE, yearsAgo: 2 },
   ];
 
   let count = 0;
-  for (const emp of employeeData) {
-    const dept = departments.find((d) => d.name === emp.department);
+  for (const vip of vipEmployees) {
+    count++;
+    const dept = deptByName[vip.dept];
     if (!dept) continue;
-    count++;
+    const salary = salaryForTier(vip.tier);
+    const hireDate = new Date(Date.now() - vip.yearsAgo * 365 * 24 * 60 * 60 * 1000);
     await prisma.employeeProfile.create({
       data: {
         employeeId: `EMP-${String(count).padStart(3, "0")}`,
-        firstName: emp.firstName,
-        lastName: emp.lastName,
-        jobTitle: emp.jobTitle,
+        firstName: vip.first,
+        lastName: vip.last,
+        jobTitle: vip.title,
         departmentId: dept.id,
-        status: emp.status,
-        hireDate: new Date(Date.now() - Math.random() * 365 * 3 * 24 * 60 * 60 * 1000),
-        location: ["New York", "San Francisco", "Austin", "Chicago", "Seattle"][Math.floor(Math.random() * 5)],
-        salaries: { create: { amount: emp.salary, effectiveDate: new Date(), notes: "Initial salary" } },
+        status: vip.status,
+        hireDate,
+        location: pick(LOCATIONS),
+        salaries: {
+          create: {
+            amount: salary,
+            effectiveDate: hireDate,
+            notes: "Initial salary",
+          },
+        },
       },
     });
   }
+  console.log(`Created ${count} VIP employees`);
 
-  // Generate 500 bulk employees for testing virtualization
-  const bulkNames = [
-    { first: "Alice", last: "Johnson" }, { first: "Bob", last: "Smith" },
-    { first: "Carol", last: "Williams" }, { first: "David", last: "Jones" },
-    { first: "Eve", last: "Miller" }, { first: "Frank", last: "Moore" },
-    { first: "Grace", last: "Lee" }, { first: "Henry", last: "Clark" },
-    { first: "Iris", last: "Hall" }, { first: "Jack", last: "Allen" },
-    { first: "Kate", last: "Young" }, { first: "Leo", last: "King" },
+  // Bulk employees — large name pool ensures no repeats
+  const STATUS_DISTRIBUTION: EmpStatus[] = [
+    EmpStatus.ACTIVE, EmpStatus.ACTIVE, EmpStatus.ACTIVE, EmpStatus.ACTIVE, EmpStatus.ACTIVE,
+    EmpStatus.ACTIVE, EmpStatus.ACTIVE, EmpStatus.ACTIVE, EmpStatus.ACTIVE, EmpStatus.ACTIVE,
+    EmpStatus.ONBOARDING, EmpStatus.ONBOARDING, EmpStatus.ONBOARDING,
+    EmpStatus.LEAVE, EmpStatus.INACTIVE,
   ];
-  const bulkTitles = ["Software Engineer", "Product Designer", "Data Analyst", "QA Engineer",
-    "DevOps Engineer", "Engineering Manager", "Tech Lead", "UX Researcher"];
-  const bulkStatuses = [EmpStatus.ACTIVE, EmpStatus.ACTIVE, EmpStatus.ACTIVE,
-    EmpStatus.ONBOARDING, EmpStatus.INACTIVE, EmpStatus.LEAVE];
-  const bulkLocations = ["New York", "San Francisco", "Austin", "Chicago", "Seattle", "Remote"];
+  const TIERS: Array<"junior" | "mid" | "senior" | "lead" | "principal"> = [
+    "junior", "junior", "mid", "mid", "mid", "senior", "senior", "lead", "principal",
+  ];
 
-  for (let i = 0; i < 500; i++) {
+  // Track unique name combos to avoid duplicates
+  const usedCombos = new Set<string>();
+  for (const vip of vipEmployees) usedCombos.add(`${vip.first}|${vip.last}`);
+
+  let attempts = 0;
+  const TARGET = 500;
+  while (count < vipEmployees.length + TARGET && attempts < TARGET * 3) {
+    attempts++;
+    const first = pick(FIRST_NAMES);
+    const last = pick(LAST_NAMES);
+    const combo = `${first}|${last}`;
+    if (usedCombos.has(combo)) continue;
+    usedCombos.add(combo);
+
     count++;
-    const name = bulkNames[i % bulkNames.length];
-    const dept = departments[i % departments.length];
-    const minSalary = (i % 5) * 15000 + 60000;
+    const deptName = pick(Object.keys(TITLES_BY_DEPARTMENT));
+    const dept = deptByName[deptName];
+    const tier = pick(TIERS);
+    const salary = salaryForTier(tier);
+    const yearsAgo = Math.random() * 6; // 0-6 years
+    const hireDate = new Date(Date.now() - yearsAgo * 365 * 24 * 60 * 60 * 1000);
     await prisma.employeeProfile.create({
       data: {
         employeeId: `EMP-${String(count).padStart(3, "0")}`,
-        firstName: name.first,
-        lastName: name.last,
-        jobTitle: bulkTitles[i % bulkTitles.length],
+        firstName: first,
+        lastName: last,
+        jobTitle: pick(TITLES_BY_DEPARTMENT[deptName]),
         departmentId: dept.id,
-        status: bulkStatuses[i % bulkStatuses.length],
-        hireDate: new Date(Date.now() - Math.random() * 365 * 5 * 24 * 60 * 60 * 1000),
-        location: bulkLocations[i % bulkLocations.length],
-        salaries: { create: { amount: minSalary, effectiveDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000) } },
+        status: pick(STATUS_DISTRIBUTION),
+        hireDate,
+        location: pick(LOCATIONS),
+        salaries: {
+          create: {
+            amount: salary,
+            effectiveDate: hireDate,
+            notes: "Initial salary",
+          },
+        },
       },
     });
   }
 
-  console.log(`Created ${count} employee profiles`);
+  console.log(`Created ${count} total employee profiles`);
   console.log("✅ Seeding complete!");
 }
 
