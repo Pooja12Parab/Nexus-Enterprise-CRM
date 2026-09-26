@@ -19,6 +19,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.82",
+    "@ai-sdk/react": "^4.0.119",
     "@clerk/nextjs": "^7.5.9",
     "@hookform/resolvers": "^5.4.0",
     "@prisma/adapter-pg": "^7.8.0",
@@ -27,6 +29,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.6",
     "@types/pg": "^8.20.0",
+    "ai": "^7.0.116",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
     "lucide-react": "^1.21.0",

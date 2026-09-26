@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { UserCircle, Mail, Shield, Calendar } from "lucide-react";
 

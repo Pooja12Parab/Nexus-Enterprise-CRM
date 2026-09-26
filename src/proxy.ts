@@ -21,6 +21,11 @@ function getRoutePrefix(pathname: string): string | undefined {
 }
 
 export default clerkMiddleware(async (auth, req) => {
+  // E2E bypass (test/dev only) — skips Clerk auth entirely
+  if (process.env.E2E_BYPASS_AUTH === "1") {
+    return NextResponse.next();
+  }
+
   if (isPublicRoute(req)) {
     return NextResponse.next();
   }

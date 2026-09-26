@@ -3,6 +3,8 @@
 A modern, full-stack Enterprise CRM platform for managing employees, departments, organizational hierarchy, onboarding, and compensation — built on **Next.js 16**, **React 19**, **Prisma 7**, **PostgreSQL**, and **Clerk** authentication.
 
 > 📦 **Deployment:** See [`docs/deploy-plan.md`](docs/deploy-plan.md) for the full production deployment guide (Vercel + Neon + Clerk).
+>
+> 🤖 **AI integration:** See [`docs/AI_INTEGRATION.md`](docs/AI_INTEGRATION.md) for the Vercel AI SDK + Google Gemini integration plan.
 
 ---
 
@@ -63,6 +65,9 @@ All screenshots are captured live from the running app against a seeded Postgres
 ### Employee Directory
 [![Employee Directory](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/directory.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/directory.jpg)
 
+### AI Search (real Gemini response — query: "engineers in marketing hired last quarter")
+[![AI Search](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/ai-search-result.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/ai-search-result.jpg)
+
 ### Employee Profile
 [![Employee Profile](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/profile.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/profile.jpg)
 
@@ -71,6 +76,9 @@ All screenshots are captured live from the running app against a seeded Postgres
 
 ### Onboarding Wizard
 [![Onboarding Wizard](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/onboarding.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/onboarding.jpg)
+
+### HR Assistant Chat (real Gemini + Prisma tool calls)
+[![HR Assistant Chat](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/hr-assistant-chat.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/hr-assistant-chat.jpg)
 
 ### 403 Forbidden
 [![403 Forbidden](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/forbidden.jpg)](https://cdn.jsdelivr.net/gh/Pooja12Parab/Nexus-Enterprise-CRM@main/docs/screenshots/forbidden.jpg)
@@ -119,6 +127,25 @@ All screenshots are captured live from the running app against a seeded Postgres
 - Type-safe end-to-end (TypeScript strict, Zod at boundaries)
 - Fully tested pyramid
 
+### AI Search (`/directory`)
+- Natural-language query converted to structured Prisma filters via Google Gemini
+- Zod-validated structured outputs (`Output.object({ schema })`)
+- Per-user rate limiting + cost tracking in `AiUsageLog`
+
+### AI Onboarding Summary (`/onboarding`)
+- "Generate with AI" button on the Review step drafts a 2-sentence welcome blurb from profile fields
+- Same Vercel AI SDK pipeline as the search
+
+### HR Assistant Chat (`/hr-assistant`)
+- Streaming chat with `useChat` + `DefaultChatTransport` + `createUIMessageStreamResponse`
+- Real Prisma tools defined via `tool({ inputSchema, execute })`:
+  - `listEmployees` — filter by department, status, search
+  - `countByDepartment` — workforce distribution
+  - `listDepartments` — all departments with employee counts
+  - `getEmployeeStats` — total / by-status / department-count aggregations
+- Conversation history persisted to PostgreSQL (`ChatThread` + `ChatMessage` tables)
+- Multi-step agent loop via `stopWhen: stepCountIs(5)`
+
 ---
 
 ## Tech Stack
@@ -133,6 +160,8 @@ All screenshots are captured live from the running app against a seeded Postgres
 | ORM | Prisma 7.8 (with `@prisma/adapter-pg`) |
 | Auth | Clerk (`@clerk/nextjs` 7) |
 | Webhooks | `svix` for signature verification |
+| AI SDK | Vercel AI SDK 7 (`ai`, `@ai-sdk/google`, `@ai-sdk/react`) |
+| LLM | Google Gemini 3.5-flash-lite (verified on free tier) |
 | Data fetching | TanStack React Query 5 |
 | URL state | `nuqs` 2 |
 | Table / Virtualization | TanStack Table 8 + TanStack Virtual 3 |

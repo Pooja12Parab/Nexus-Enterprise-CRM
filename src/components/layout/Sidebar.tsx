@@ -11,6 +11,7 @@ import {
   GitBranch,
   UserCircle,
   Settings,
+  Sparkles,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const navigation = [
   { name: "Directory", href: "/directory", icon: Users, roles: ["HR_MANAGER", "SUPER_ADMIN"] },
   { name: "Onboarding", href: "/onboarding", icon: UserPlus, roles: ["HR_MANAGER", "SUPER_ADMIN"] },
   { name: "Org Chart", href: "/org-chart", icon: GitBranch, roles: ["HR_MANAGER", "SUPER_ADMIN"] },
+  { name: "HR Assistant", href: "/hr-assistant", icon: Sparkles, roles: ["HR_MANAGER", "SUPER_ADMIN"] },
   { name: "My Profile", href: "/my-profile", icon: UserCircle, roles: ["HR_MANAGER", "SUPER_ADMIN", "DEPT_HEAD", "EMPLOYEE"] },
   { name: "Settings", href: "/settings", icon: Settings, roles: ["SUPER_ADMIN"] },
 ];

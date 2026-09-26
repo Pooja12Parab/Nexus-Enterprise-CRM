@@ -1,9 +1,10 @@
 "use client";
 
 import { UserButton } from "@clerk/nextjs";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, User } from "lucide-react";
 
 export function AppHeader() {
+  const bypass = process.env.NEXT_PUBLIC_E2E_BYPASS_AUTH === "1";
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6">
       <div className="flex items-center gap-4">
@@ -22,13 +23,22 @@ export function AppHeader() {
           <Bell className="h-5 w-5" />
           <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
         </button>
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: "h-8 w-8",
-            },
-          }}
-        />
+        {bypass ? (
+          <div
+            data-testid="user-button-stub"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-nexus-100 text-nexus-700"
+          >
+            <User className="h-4 w-4" />
+          </div>
+        ) : (
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: "h-8 w-8",
+              },
+            }}
+          />
+        )}
       </div>
     </header>
   );

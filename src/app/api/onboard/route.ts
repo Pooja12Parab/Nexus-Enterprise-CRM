@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { handleApiError, unauthorizedResponse, forbiddenResponse, resolveRole } from "@/lib/api-utils";
 import { onboardingSchema } from "@/shared/schemas/onboarding";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {

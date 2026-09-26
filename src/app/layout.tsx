@@ -23,6 +23,22 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const bypass = process.env.E2E_BYPASS_AUTH === "1";
+  const content = (
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full bg-white text-gray-900 flex flex-col">
+        {children}
+      </body>
+    </html>
+  );
+
+  if (bypass) {
+    return content;
+  }
+
   return (
     <ClerkProvider
       appearance={{
@@ -31,14 +47,7 @@ export default function RootLayout({
         },
       }}
     >
-      <html
-        lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      >
-        <body className="min-h-full bg-white text-gray-900 flex flex-col">
-          {children}
-        </body>
-      </html>
+      {content}
     </ClerkProvider>
   );
 }

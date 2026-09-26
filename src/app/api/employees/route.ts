@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { handleApiError, unauthorizedResponse, forbiddenResponse, resolveRole } from "@/lib/api-utils";
 import { employeeQuerySchema } from "@/shared/schemas/employee";
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {

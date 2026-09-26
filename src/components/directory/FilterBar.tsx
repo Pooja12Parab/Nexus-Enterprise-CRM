@@ -3,6 +3,7 @@
 import { useDirectoryFilters } from "@/hooks/use-directory-filters";
 import { useDepartments } from "@/hooks/use-departments";
 import { FilterChip } from "@/components/directory/FilterChip";
+import { AiSearch } from "@/components/ai/AiSearch";
 import { Search, X, Filter } from "lucide-react";
 
 export function FilterBar() {
@@ -78,6 +79,8 @@ export function FilterBar() {
             Clear filters
           </button>
         )}
+
+        <AiSearch onResults={() => null} />
       </div>
 
       {/* Active filter chips */}
