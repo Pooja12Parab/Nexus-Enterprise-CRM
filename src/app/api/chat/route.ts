@@ -7,10 +7,11 @@ import {
   streamText,
   toUIMessageStream,
   validateUIMessages,
+  type ToolSet,
   type UIMessage,
 } from "ai";
 import { getModel } from "@/lib/ai";
-import { aiTools } from "@/lib/ai/tools";
+import { getMcpTools } from "@/lib/mcp/client";
 import { logAiUsage } from "@/lib/ai/log";
 import { rateLimit } from "@/lib/ai/rate-limit";
 import {
@@ -67,11 +68,14 @@ export async function POST(req: NextRequest) {
   const previousMessages = await loadChatHistory(chatId, userId);
   const incoming = body.messages;
 
+  // Tools come from the MCP server — single source of truth shared with external clients
+  const tools: ToolSet = await getMcpTools();
+
   let validatedMessages: UIMessage[];
   try {
     validatedMessages = await validateUIMessages({
       messages: [...previousMessages, ...incoming],
-      tools: aiTools,
+      tools,
     });
   } catch {
     validatedMessages = [...previousMessages, ...incoming];
@@ -85,7 +89,7 @@ export async function POST(req: NextRequest) {
       "You are an HR assistant for Nexus Enterprise CRM. Answer questions about employees, " +
       "departments, and the workforce using the provided tools. Be concise, accurate, and cite which tool you used. " +
       "If the tools don't have the answer, say so honestly. Never invent employee names or counts.",
-    tools: aiTools,
+    tools,
     stopWhen: stepCountIs(5),
   });
 
